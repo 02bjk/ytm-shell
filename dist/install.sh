@@ -23,18 +23,22 @@ fi
 # Create target directories
 mkdir -p "$INSTALL_DIR" "$DESKTOP_DIR" "$ICON_DIR"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR=""
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd || true)"
+fi
 
 # Check if installing from local archive/build or remote release
-if [ -f "${SCRIPT_DIR}/../target/release/${BIN_NAME}" ]; then
+if [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/../target/release/${BIN_NAME}" ]; then
     echo "--> Installing from local release build..."
     install -m 0755 "${SCRIPT_DIR}/../target/release/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
     install -m 0644 "${SCRIPT_DIR}/../packaging/ytm-shell.desktop" "${DESKTOP_DIR}/ytm-shell.desktop"
     install -m 0644 "${SCRIPT_DIR}/../icons/128x128.png" "${ICON_DIR}/ytm-shell.png"
-elif [ -f "${SCRIPT_DIR}/${BIN_NAME}" ]; then
+elif [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/${BIN_NAME}" ]; then
     echo "--> Installing from local folder..."
     install -m 0755 "${SCRIPT_DIR}/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
     [ -f "${SCRIPT_DIR}/ytm-shell.desktop" ] && install -m 0644 "${SCRIPT_DIR}/ytm-shell.desktop" "${DESKTOP_DIR}/ytm-shell.desktop"
+    [ -f "${SCRIPT_DIR}/128x128.png" ] && install -m 0644 "${SCRIPT_DIR}/128x128.png" "${ICON_DIR}/ytm-shell.png"
     [ -f "${SCRIPT_DIR}/icon.png" ] && install -m 0644 "${SCRIPT_DIR}/icon.png" "${ICON_DIR}/ytm-shell.png"
 else
     echo "--> Fetching latest release asset from GitHub (${REPO})..."
