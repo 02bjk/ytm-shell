@@ -45,7 +45,7 @@ jobs:
           cargo test --verbose
 
       - name: Build Release Binary
-        run: cargo build --release --locked
+        run: cargo build --release --locked --bin ytm-shell
 
       - name: Package Linux Archive
         run: |
@@ -76,7 +76,7 @@ jobs:
         uses: swatinem/rust-cache@v2
 
       - name: Build Release Binary
-        run: cargo build --release --locked
+        run: cargo build --release --locked --bin ytm-shell
 
       - name: Package Windows Archive
         shell: bash

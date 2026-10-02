@@ -31,14 +31,20 @@ pub fn apply_platform_hardening<R: Runtime>(window: &WebviewWindow<R>) {
             let force_gpu = std::env::args().any(|arg| arg == "--force-gpu");
 
             if disable_gpu {
-                settings.set_hardware_acceleration_policy(webkit2gtk::HardwareAccelerationPolicy::Never);
+                settings.set_hardware_acceleration_policy(
+                    webkit2gtk::HardwareAccelerationPolicy::Never,
+                );
                 settings.set_enable_webgl(false);
             } else if force_gpu {
-                settings.set_hardware_acceleration_policy(webkit2gtk::HardwareAccelerationPolicy::Always);
+                settings.set_hardware_acceleration_policy(
+                    webkit2gtk::HardwareAccelerationPolicy::Always,
+                );
                 settings.set_enable_webgl(true);
             } else {
                 // Default: OnDemand acceleration (activates GPU for video/compositing without wasting power)
-                settings.set_hardware_acceleration_policy(webkit2gtk::HardwareAccelerationPolicy::OnDemand);
+                settings.set_hardware_acceleration_policy(
+                    webkit2gtk::HardwareAccelerationPolicy::OnDemand,
+                );
                 settings.set_enable_webgl(true);
             }
 
