@@ -1,0 +1,29 @@
+app-id: com.youtube.music.ytm_shell
+runtime: org.gnome.Platform
+runtime-version: '46'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: ytm-shell
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --talk-name=org.mpris.MediaPlayer2.ytm_shell
+  - --own-name=org.mpris.MediaPlayer2.ytm_shell
+  - --device=dri
+modules:
+  - name: ytm-shell
+    buildsystem: simple
+    build-commands:
+      - cargo --offline fetch --manifest-path Cargo.toml
+      - cargo --offline build --release --verbose
+      - install -Dm755 target/release/ytm-shell /app/bin/ytm-shell
+      - install -Dm644 packaging/ytm-shell.desktop /app/share/applications/com.youtube.music.ytm_shell.desktop
+      - install -Dm644 packaging/ytm-shell.metainfo.xml /app/share/metainfo/com.youtube.music.ytm_shell.metainfo.xml
+      - install -Dm644 icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.youtube.music.ytm_shell.png
+    sources:
+      - type: dir
+        path: ../

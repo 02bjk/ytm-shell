@@ -1,0 +1,34 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local Profiles, Storage & Caches
+profile/
+content_filters/
+*.log
+
+# Sensitive Files & Credentials (NEVER COMMIT)
+.env
+.env.*
+*.pem
+*.key
+*.token
+credentials.json
+
+# Local Release Binaries (distributed via GitHub Releases, not git history)
+/dist/*.tar.gz
+/dist/*.zip
+/dist/*.exe
+/dist/*.AppImage
+/dist/*.deb
+!/dist/install.sh

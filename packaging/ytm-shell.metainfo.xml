@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.youtube.music.ytm_shell</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT OR Apache-2.0</project_license>
+  <name>YouTube Music Shell</name>
+  <summary>Minimal, hardened desktop player for YouTube Music</summary>
+  <description>
+    <p>
+      YTM Shell is a secure, resource-efficient desktop wrapper for YouTube Music built with Rust and Tauri.
+      It features native WebKitGTK 4.1 sandboxing, multi-layered ad and telemetry blocking, MPRIS D-Bus
+      desktop integration, global hardware media keys, and persistent login with isolated profile storage.
+    </p>
+    <ul>
+      <li>Hardened WebKitGTK 4.1 engine with WebRTC disabled and context menu suppression</li>
+      <li>Layer A DOM scriptlets and Layer B native WebKit Content Rule List adblock matching</li>
+      <li>System tray controls with close-to-tray background playback and single-instance enforcement</li>
+      <li>Full Linux MPRIS D-Bus integration for GNOME, KDE, and playerctl</li>
+      <li>Sub-10 MB binary footprint and minimal RAM utilization</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">ytm-shell.desktop</launchable>
+  <provides>
+    <binary>ytm-shell</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-02">
+      <description>
+        <p>Initial release with hardened security architecture, MPRIS media keys, and adblocking engine.</p>
+      </description>
+    </release>
+  </releases>
+</component>

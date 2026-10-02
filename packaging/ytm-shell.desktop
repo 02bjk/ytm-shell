@@ -1,0 +1,28 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=YouTube Music
+GenericName=Music Player
+Comment=Minimal, hardened desktop shell for YouTube Music
+Exec=ytm-shell %u
+Icon=ytm-shell
+Terminal=false
+StartupNotify=true
+StartupWMClass=ytm-shell
+Categories=AudioVideo;Audio;Player;Network;
+Keywords=music;audio;stream;youtube;ytm;player;adblock;
+MimeType=x-scheme-handler/ytm;
+
+Actions=PlayPause;Next;Previous;
+
+[Desktop Action PlayPause]
+Name=Play / Pause
+Exec=playerctl -p ytm_shell play-pause
+
+[Desktop Action Next]
+Name=Next Track
+Exec=playerctl -p ytm_shell next
+
+[Desktop Action Previous]
+Name=Previous Track
+Exec=playerctl -p ytm_shell previous

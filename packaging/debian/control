@@ -1,0 +1,22 @@
+Source: ytm-shell
+Section: sound
+Priority: optional
+Maintainer: Security Engineering Team <security@example.com>
+Build-Depends: debhelper-compat (= 13),
+               rustc (>= 1.80.0),
+               cargo,
+               pkg-config,
+               libgtk-3-dev,
+               libwebkit2gtk-4.1-dev,
+               libayatana-appindicator3-dev,
+               libssl-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/example/ytm-shell
+
+Package: ytm-shell
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libwebkit2gtk-4.1-0, libgtk-3-0
+Description: Minimal, hardened desktop shell for YouTube Music
+ YTM Shell is a secure desktop client for YouTube Music developed in Rust
+ with Tauri. It features multi-layered adblocking, WebKitGTK sandboxing,
+ MPRIS D-Bus integration, global media shortcuts, and persistent login.
