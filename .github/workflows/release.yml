@@ -78,26 +78,19 @@ jobs:
       - name: Build Release Binary
         run: cargo build --release --locked --bin ytm-shell
 
+      - name: Install NSIS Compiler
+        run: choco install nsis -y
+
       - name: Package Windows Installer & Archive
         shell: bash
         run: |
+          export PATH="/c/Program Files (x86)/NSIS:$PATH"
           mkdir -p dist-win
           cp target/release/ytm-shell.exe dist-win/
           cp icons/icon.ico dist-win/
 
-          # Locate makensis on Windows Runner
-          if command -v makensis >/dev/null 2>&1; then
-            MAKENSIS="makensis"
-          elif [ -f "/c/Program Files (x86)/NSIS/makensis.exe" ]; then
-            MAKENSIS="/c/Program Files (x86)/NSIS/makensis.exe"
-          elif [ -f "C:\\Program Files (x86)\\NSIS\\makensis.exe" ]; then
-            MAKENSIS="C:\\Program Files (x86)\\NSIS\\makensis.exe"
-          else
-            choco install nsis -y
-            MAKENSIS="makensis"
-          fi
-
-          (cd packaging/windows && "$MAKENSIS" installer.nsi)
+          echo "Compiling Windows NSIS Setup Installer..."
+          (cd packaging/windows && "/c/Program Files (x86)/NSIS/makensis.exe" installer.nsi)
 
           # Build portable zip for users who prefer portable execution
           powershell -Command "Compress-Archive -Path dist-win/ytm-shell.exe,dist-win/icon.ico -DestinationPath dist-win/ytm-shell-windows-x64-portable.zip -Force"
