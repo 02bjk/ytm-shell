@@ -2,7 +2,7 @@
 
 Minimal, hardened desktop wrapper for [YouTube Music](https://music.youtube.com). Built with pure Rust, WebKitGTK 4.1 (Linux), and WebView2 (Windows).
 
-Designed for zero background telemetry, multi-layer ad blocking, native MPRIS / SMTC media controls, close-to-tray playback, and a tiny binary footprint (<10 MB).
+
 
 ---
 
@@ -27,7 +27,7 @@ Designed for zero background telemetry, multi-layer ad blocking, native MPRIS / 
 | **Data Collected** | **None (0%)** | `ytm-shell` collects zero personal data, zero analytics, zero metrics, and zero crash reports. |
 | **Data Needed** | **Session Cookies** | Stored strictly in a local, isolated browser cookie store on your device with POSIX `0700` permissions. Cookies are only sent to `music.youtube.com` and `accounts.google.com`. |
 | **Optional Data** | **None** | No optional telemetry or cloud sync. |
-| **Telemetry Interception** | **Blocked & Mocked** | Outbound Google tracking beacons and telemetry requests (`log_event`, `qoe`, `atr`, `pagead`) are blocked and answered locally with a dummy `200 OK` response so Google receives no tracking data and the player never freezes. |
+| **Telemetry Interception** | **Blocked & Mocked** | Outbound  tracking beacons and telemetry requests (`log_event`, `qoe`, `atr`, `pagead`) are blocked and answered locally with a dummy `200 OK` response so  no tracking data and the player never freezes. |
 
 ---
 
@@ -126,13 +126,9 @@ cargo test
 cargo build --release
 ```
 
-The compiled binary will be located at `target/release/ytm-shell` (~7.3 MB).
 
 ---
 
-## Security Audit
-
-Verified against the Cloudflare Security Audit Specification. Full report and verification ledgers available in [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md).
 
 ## License
 
