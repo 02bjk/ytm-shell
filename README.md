@@ -104,9 +104,15 @@ If your system does not already have WebKitGTK and GStreamer installed, install 
 
 ### Windows
 
-1. Download `ytm-shell-windows-x64.zip` from [GitHub Releases](https://github.com/02bjk/ytm-shell/releases).
-2. Extract the archive and launch `ytm-shell.exe`.
-3. **Dependencies**: Requires Microsoft Edge WebView2 Runtime (pre-installed on Windows 10 & 11).
+#### Option 1: Setup Installer (Recommended)
+1. Download **`ytm-shell-setup-x64.exe`** from [GitHub Releases](https://github.com/02bjk/ytm-shell/releases).
+2. Run the installer. It will install the application to `C:\Program Files\YouTube Music`, create **Start Menu** and **Desktop** shortcuts, and register an uninstaller in Windows Settings.
+
+#### Option 2: Portable Archive
+1. Download **`ytm-shell-windows-x64.zip`** from [GitHub Releases](https://github.com/02bjk/ytm-shell/releases).
+2. Extract the archive anywhere and double-click `ytm-shell.exe` to run immediately without installation.
+
+* **Dependencies**: Requires Microsoft Edge WebView2 Runtime (pre-installed on Windows 10 and Windows 11).
 
 ---
 

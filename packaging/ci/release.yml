@@ -78,19 +78,39 @@ jobs:
       - name: Build Release Binary
         run: cargo build --release --locked --bin ytm-shell
 
-      - name: Package Windows Archive
+      - name: Package Windows Installer & Archive
         shell: bash
         run: |
           mkdir -p dist-win
           cp target/release/ytm-shell.exe dist-win/
           cp icons/icon.ico dist-win/
-          powershell -Command "Compress-Archive -Path dist-win/* -DestinationPath ytm-shell-windows-x64.zip -Force"
+
+          # Locate makensis on Windows Runner
+          if command -v makensis >/dev/null 2>&1; then
+            MAKENSIS="makensis"
+          elif [ -f "/c/Program Files (x86)/NSIS/makensis.exe" ]; then
+            MAKENSIS="/c/Program Files (x86)/NSIS/makensis.exe"
+          elif [ -f "C:\\Program Files (x86)\\NSIS\\makensis.exe" ]; then
+            MAKENSIS="C:\\Program Files (x86)\\NSIS\\makensis.exe"
+          else
+            choco install nsis -y
+            MAKENSIS="makensis"
+          fi
+
+          (cd packaging/windows && "$MAKENSIS" installer.nsi)
+
+          # Build portable zip for users who prefer portable execution
+          powershell -Command "Compress-Archive -Path dist-win/ytm-shell.exe,dist-win/icon.ico -DestinationPath dist-win/ytm-shell-windows-x64-portable.zip -Force"
+          cp dist-win/ytm-shell-windows-x64-portable.zip dist-win/ytm-shell-windows-x64.zip
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ytm-shell-windows-x64
-          path: ytm-shell-windows-x64.zip
+          path: |
+            dist-win/ytm-shell-setup-x64.exe
+            dist-win/ytm-shell-windows-x64-portable.zip
+            dist-win/ytm-shell-windows-x64.zip
 
   publish-release:
     name: Publish GitHub Release

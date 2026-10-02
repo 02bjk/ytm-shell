@@ -1,4 +1,5 @@
 #![deny(unsafe_code)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 pub mod adblock;
 pub mod allowlist;
