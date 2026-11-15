@@ -1,6 +1,6 @@
 //! Layer A ad and tracker blocking scriptlets.
 //! Injected at document-start, strictly hostname-guarded to music.youtube.com.
-//! Hooks fetch, XMLHttpRequest, JSON.parse, and inline ytInitialPlayerResponse/ytInitialData
+//! Hooks fetch, JSON.parse, and inline ytInitialPlayerResponse/ytInitialData
 //! to prune ad structures before the YouTube Music application consumes them.
 //! Features an ad-skipping engine that mutes/fast-skips ads without skipping or fast-forwarding songs,
 //! an observer tied directly to #movie_player (eliminating CPU thrashing and lag),
@@ -21,6 +21,13 @@ pub const LAYER_A_SCRIPT: &str = r#"
     // 1. Surgical Cosmetic Hiding CSS & Indicator Styles
     // -------------------------------------------------------------
     var COSMETIC_CSS = `
+        html,
+        body,
+        #contents,
+        ytmusic-app {
+            background-color: #030303 !important;
+        }
+
         ytmusic-mealbar-promo-renderer,
         ytmusic-player-overlay-renderer[ad-showing],
         ytmusic-ad-slot-renderer,
@@ -219,7 +226,7 @@ pub const LAYER_A_SCRIPT: &str = r#"
     }
 
     // -------------------------------------------------------------
-    // 4. Hook fetch for /player, /next and telemetry endpoints
+    // 4. Hook fetch for /player and telemetry endpoints
     // -------------------------------------------------------------
     if (typeof window.fetch === 'function') {
         var origFetch = window.fetch;
@@ -234,7 +241,7 @@ pub const LAYER_A_SCRIPT: &str = r#"
                 });
             }
 
-            var isAdTarget = url.includes('/youtubei/v1/player') || url.includes('/youtubei/v1/next');
+            var isAdTarget = url.includes('/youtubei/v1/player');
             var response = await origFetch.apply(this, arguments);
 
             if (isAdTarget) {
@@ -273,90 +280,7 @@ pub const LAYER_A_SCRIPT: &str = r#"
     }
 
     // -------------------------------------------------------------
-    // 5. Hook XMLHttpRequest for /player, /next and telemetry endpoints
-    // -------------------------------------------------------------
-    if (typeof window.XMLHttpRequest === 'function') {
-        var origOpen = XMLHttpRequest.prototype.open;
-        var origSend = XMLHttpRequest.prototype.send;
-
-        XMLHttpRequest.prototype.open = function(method, url) {
-            this._ytmUrl = typeof url === 'string' ? url : '';
-            return origOpen.apply(this, arguments);
-        };
-
-        XMLHttpRequest.prototype.send = function(body) {
-            if (isTelemetryOrAdUrl(this._ytmUrl)) {
-                var self = this;
-                try {
-                    Object.defineProperty(self, 'readyState', { value: 4, writable: true, configurable: true });
-                    Object.defineProperty(self, 'status', { value: 200, writable: true, configurable: true });
-                    Object.defineProperty(self, 'responseText', { value: '{}', writable: true, configurable: true });
-                    Object.defineProperty(self, 'response', { value: '{}', writable: true, configurable: true });
-                } catch (_) {}
-                setTimeout(function() {
-                    if (typeof self.onreadystatechange === 'function') self.onreadystatechange();
-                    if (typeof self.onload === 'function') self.onload();
-                }, 0);
-                return;
-            }
-            return origSend.apply(this, arguments);
-        };
-
-        var descText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
-        var descResp = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');
-
-        if (descText && descText.get) {
-            Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
-                get: function() {
-                    if (this._ytmPrunedText !== undefined) {
-                        return this._ytmPrunedText;
-                    }
-                    var raw = descText.get.call(this);
-                    if (this._ytmUrl && (this._ytmUrl.includes('/youtubei/v1/player') || this._ytmUrl.includes('/youtubei/v1/next'))) {
-                        try {
-                            var data = JSON.parse(raw);
-                            this._ytmPrunedText = JSON.stringify(pruneRecursive(data, 0));
-                            return this._ytmPrunedText;
-                        } catch (_) {}
-                    }
-                    this._ytmPrunedText = raw;
-                    return raw;
-                },
-                configurable: true,
-                enumerable: true
-            });
-        }
-
-        if (descResp && descResp.get) {
-            Object.defineProperty(XMLHttpRequest.prototype, 'response', {
-                get: function() {
-                    if (this._ytmPrunedResp !== undefined) {
-                        return this._ytmPrunedResp;
-                    }
-                    var raw = descResp.get.call(this);
-                    if (this._ytmUrl && (this._ytmUrl.includes('/youtubei/v1/player') || this._ytmUrl.includes('/youtubei/v1/next'))) {
-                        if (typeof raw === 'string') {
-                            try {
-                                var data = JSON.parse(raw);
-                                this._ytmPrunedResp = JSON.stringify(pruneRecursive(data, 0));
-                                return this._ytmPrunedResp;
-                            } catch (_) {}
-                        } else if (typeof raw === 'object' && raw !== null) {
-                            this._ytmPrunedResp = pruneRecursive(raw, 0);
-                            return this._ytmPrunedResp;
-                        }
-                    }
-                    this._ytmPrunedResp = raw;
-                    return raw;
-                },
-                configurable: true,
-                enumerable: true
-            });
-        }
-    }
-
-    // -------------------------------------------------------------
-    // 6. Defensive fallback: prune inline player state only
+    // 5. Defensive fallback: prune inline player state only
     // -------------------------------------------------------------
     var origParse = JSON.parse;
     JSON.parse = function(text, reviver) {
@@ -479,9 +403,6 @@ pub const LAYER_A_SCRIPT: &str = r#"
                         if (video.playbackRate !== 1.0) {
                             video.playbackRate = 1.0;
                         }
-                        if (video.currentTime > 0 && video.currentTime < 5) {
-                            video.currentTime = 0;
-                        }
                     }
                 } else {
                     // Duration not yet loaded (buffering/switching): pause to protect song
@@ -502,11 +423,6 @@ pub const LAYER_A_SCRIPT: &str = r#"
                     // Restore original mute state
                     video.muted = wasMutedBeforeAd;
                     video.playbackRate = 1.0;
-
-                    // If the track was held near start, rewind cleanly to 0:00
-                    if (video.currentTime > 0 && video.currentTime < 5 && video.duration > 65) {
-                        video.currentTime = 0;
-                    }
 
                     // Resume smooth playback of the track
                     if (video.paused) {
@@ -584,13 +500,11 @@ mod tests {
     fn test_adblock_script_contains_required_hooks() {
         assert!(LAYER_A_SCRIPT.contains("window.location.hostname !== 'music.youtube.com'"));
         assert!(LAYER_A_SCRIPT.contains("/youtubei/v1/player"));
-        assert!(LAYER_A_SCRIPT.contains("/youtubei/v1/next"));
         assert!(LAYER_A_SCRIPT.contains("delete val[key]"));
         assert!(LAYER_A_SCRIPT.contains("adPlacements"));
         assert!(LAYER_A_SCRIPT.contains("playerAds"));
         assert!(LAYER_A_SCRIPT.contains("adSlots"));
         assert!(LAYER_A_SCRIPT.contains("window.fetch"));
-        assert!(LAYER_A_SCRIPT.contains("XMLHttpRequest.prototype.open"));
         assert!(LAYER_A_SCRIPT.contains("JSON.parse"));
         assert!(LAYER_A_SCRIPT.contains("ad-showing"));
         assert!(LAYER_A_SCRIPT.contains("dur <= 65"));

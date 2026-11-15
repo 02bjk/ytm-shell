@@ -24,6 +24,13 @@ const SECURITY_INIT_SCRIPT: &str = r#"
         }
     }, true);
 
+    // Enforce instant dark background to eliminate white flashing before CSS loads
+    try {
+        var darkStyle = document.createElement('style');
+        darkStyle.textContent = 'html, body { background-color: #030303 !important; }';
+        (document.head || document.documentElement).appendChild(darkStyle);
+    } catch (_) {}
+
     // Enforce strict referrer policy at DOM level
     try {
         var meta = document.createElement('meta');

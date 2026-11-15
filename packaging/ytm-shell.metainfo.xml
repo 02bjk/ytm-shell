@@ -25,6 +25,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.2.2" date="2026-11-15">
+      <description>
+        <p>Fixed screen flickering during rapid scrolling and resolved playback progress bar stalling.</p>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-11-15">
       <description>
         <p>Complete uninstaller release: automated uninstaller tools across Linux and Windows that cleanly remove binaries, launchers, and completely purge all leftover profile and cache data.</p>

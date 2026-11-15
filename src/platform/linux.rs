@@ -74,6 +74,10 @@ pub fn apply_platform_hardening<R: Runtime>(window: &WebviewWindow<R>) {
                 true
             }
         });
+
+        // Set native dark background color to prevent bright white flash during rapid scrolling/tile invalidation
+        let bg_color = gtk::gdk::RGBA::BLACK;
+        wv.set_background_color(&bg_color);
     });
 }
 
