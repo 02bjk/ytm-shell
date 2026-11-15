@@ -117,7 +117,9 @@ fn perform_cli_uninstall() {
             #[cfg(target_os = "windows")]
             {
                 let _ = std::process::Command::new("cmd")
-                    .args(["/c", "timeout", "/t", "1", "/nobreak", ">nul", "&", "del", "/f", "/q"])
+                    .args([
+                        "/c", "timeout", "/t", "1", "/nobreak", ">nul", "&", "del", "/f", "/q",
+                    ])
                     .arg(&exe_path)
                     .spawn();
             }
