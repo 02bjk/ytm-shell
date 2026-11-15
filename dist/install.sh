@@ -11,6 +11,22 @@ INSTALL_DIR="${HOME}/.local/bin"
 DESKTOP_DIR="${HOME}/.local/share/applications"
 ICON_DIR="${HOME}/.local/share/icons/hicolor/128x128/apps"
 
+# Handle --uninstall or -u argument
+for arg in "$@"; do
+    if [ "$arg" = "--uninstall" ] || [ "$arg" = "-u" ]; then
+        SCRIPT_DIR=""
+        if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd || true)"
+        fi
+        if [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/uninstall.sh" ]; then
+            exec bash "${SCRIPT_DIR}/uninstall.sh" "$@"
+        else
+            echo "--> Running remote uninstaller from GitHub..."
+            exec curl -sSL "https://raw.githubusercontent.com/${REPO}/main/dist/uninstall.sh" | bash -s -- "$@"
+        fi
+    fi
+done
+
 echo "==> Installing YTM Shell (YouTube Music)..."
 
 # Ensure architecture is x86_64
@@ -34,12 +50,14 @@ if [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/../target/release/${BIN_NAME}" ];
     install -m 0755 "${SCRIPT_DIR}/../target/release/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
     install -m 0644 "${SCRIPT_DIR}/../packaging/ytm-shell.desktop" "${DESKTOP_DIR}/ytm-shell.desktop"
     install -m 0644 "${SCRIPT_DIR}/../icons/128x128.png" "${ICON_DIR}/ytm-shell.png"
+    [ -f "${SCRIPT_DIR}/uninstall.sh" ] && install -m 0755 "${SCRIPT_DIR}/uninstall.sh" "${INSTALL_DIR}/ytm-shell-uninstall"
 elif [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/${BIN_NAME}" ]; then
     echo "--> Installing from local folder..."
     install -m 0755 "${SCRIPT_DIR}/${BIN_NAME}" "${INSTALL_DIR}/${BIN_NAME}"
     [ -f "${SCRIPT_DIR}/ytm-shell.desktop" ] && install -m 0644 "${SCRIPT_DIR}/ytm-shell.desktop" "${DESKTOP_DIR}/ytm-shell.desktop"
     [ -f "${SCRIPT_DIR}/128x128.png" ] && install -m 0644 "${SCRIPT_DIR}/128x128.png" "${ICON_DIR}/ytm-shell.png"
     [ -f "${SCRIPT_DIR}/icon.png" ] && install -m 0644 "${SCRIPT_DIR}/icon.png" "${ICON_DIR}/ytm-shell.png"
+    [ -f "${SCRIPT_DIR}/uninstall.sh" ] && install -m 0755 "${SCRIPT_DIR}/uninstall.sh" "${INSTALL_DIR}/ytm-shell-uninstall"
 else
     echo "--> Fetching latest release asset from GitHub (${REPO})..."
     TEMP_DIR="$(mktemp -d)"
@@ -52,6 +70,7 @@ else
         install -m 0755 "${TEMP_DIR}/ytm-shell" "${INSTALL_DIR}/${BIN_NAME}"
         [ -f "${TEMP_DIR}/ytm-shell.desktop" ] && install -m 0644 "${TEMP_DIR}/ytm-shell.desktop" "${DESKTOP_DIR}/ytm-shell.desktop"
         [ -f "${TEMP_DIR}/128x128.png" ] && install -m 0644 "${TEMP_DIR}/128x128.png" "${ICON_DIR}/ytm-shell.png"
+        [ -f "${TEMP_DIR}/uninstall.sh" ] && install -m 0755 "${TEMP_DIR}/uninstall.sh" "${INSTALL_DIR}/ytm-shell-uninstall"
     else
         echo "Error: Failed to download release asset from GitHub." >&2
         echo "Please verify release assets exist on https://github.com/${REPO}/releases." >&2

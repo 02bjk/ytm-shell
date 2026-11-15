@@ -39,11 +39,12 @@ ytm-shell [FLAGS]
 
 | Flag | Description |
 | :--- | :--- |
-| *(default)* | Runs with balanced GPU acceleration (`OnDemand`), activating the GPU during video playback and saving power when idle. |
-| `--force-gpu` | Enforces full hardware acceleration (`Always`) and WebKit compositing mode for maximum throughput. |
+| *(default)* | Runs with permanent GPU hardware acceleration (`Always`) on Linux for zero-latency hover and playback. |
 | `--disable-gpu` | Disables GPU acceleration (`Never`); forces software rasterization for headless VMs or systems with buggy graphics drivers. |
 | `--minimized` | Launches the application directly hidden to the system tray without displaying the main window. |
 | `--allow-unfiltered` | Security override flag (for debugging only). Bypasses fail-closed adblock filter enforcement. |
+| `--uninstall` | Completely uninstalls `ytm-shell`, removes desktop launchers/icons, and purges all leftover user profiles, adblock rules, and caches. |
+| `-h`, `--help` | Displays command-line help message with available flags. |
 
 ---
 
@@ -113,6 +114,45 @@ If your system does not already have WebKitGTK and GStreamer installed, install 
 2. Extract the archive anywhere and double-click `ytm-shell.exe` to run immediately without installation.
 
 * **Dependencies**: Requires Microsoft Edge WebView2 Runtime (pre-installed on Windows 10 and Windows 11).
+
+---
+
+## Complete Uninstallation
+
+`ytm-shell` provides full uninstallation tools that wipe all binaries, desktop integrations, shortcuts, and **all leftover application data, cookies, adblocking rules, and caches** leaving zero traces on your system.
+
+### Linux
+
+#### Option 1: One-Line Curl Uninstaller (Fastest)
+Removes the binary, launchers, icons, and purges all profile directories and caches:
+```bash
+curl -sSL https://raw.githubusercontent.com/02bjk/ytm-shell/main/dist/uninstall.sh | bash
+```
+
+#### Option 2: Pre-Installed Uninstaller Command
+If installed via `install.sh`, you can run the uninstaller command directly:
+```bash
+ytm-shell-uninstall
+```
+
+#### Option 3: Built-in Application CLI Flag
+```bash
+ytm-shell --uninstall
+```
+
+---
+
+### Windows
+
+#### Option 1: Windows Settings / Control Panel (Recommended)
+1. Open Windows **Settings** (`Win + I`) -> **Apps** -> **Installed apps**.
+2. Locate **YouTube Music** and click **Uninstall**.
+3. The uninstaller terminates running instances, deletes `C:\Program Files\YouTube Music`, cleans Start Menu & Desktop shortcuts, and completely purges all leftover user profiles, adblock rules, and WebView2 caches in `%APPDATA%` and `%LOCALAPPDATA%`.
+
+#### Option 2: Built-in Command Line Flag
+```cmd
+ytm-shell.exe --uninstall
+```
 
 ---
 

@@ -8,7 +8,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "YouTube Music"
-!define PRODUCT_VERSION "0.2.0"
+!define PRODUCT_VERSION "0.2.1"
 !define PRODUCT_PUBLISHER "02bjk"
 !define PRODUCT_WEB_SITE "https://github.com/02bjk/ytm-shell"
 !define PRODUCT_EXE "ytm-shell.exe"
@@ -93,18 +93,29 @@ SectionEnd
 
 ; Uninstallation Section
 Section "Uninstall"
+    ; Terminate any running instances of ytm-shell
+    nsExec::Exec 'taskkill /F /IM ytm-shell.exe /T'
+
     ; Remove Desktop and Start Menu Shortcuts
     Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
     Delete "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk"
     Delete "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall ${PRODUCT_NAME}.lnk"
-    RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+    RMDir /r "$SMPROGRAMS\${PRODUCT_NAME}"
 
-    ; Remove Application Files
+    ; Remove Application Files and Installation Directory
     Delete "$INSTDIR\${PRODUCT_EXE}"
     Delete "$INSTDIR\icon.ico"
     Delete "$INSTDIR\uninstall.exe"
-    RMDir "$INSTDIR"
+    RMDir /r "$INSTDIR"
+
+    ; Completely purge all leftover user profiles, adblock rules, caches, and storage
+    RMDir /r "$APPDATA\com.ytm.shell"
+    RMDir /r "$LOCALAPPDATA\com.ytm.shell"
+    RMDir /r "$APPDATA\ytm-shell"
+    RMDir /r "$LOCALAPPDATA\ytm-shell"
+    RMDir /r "$LOCALAPPDATA\YouTube Music"
 
     ; Remove Windows Add/Remove Programs Registry Entries
     DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
+    DeleteRegKey HKCU "Software\${PRODUCT_NAME}"
 SectionEnd

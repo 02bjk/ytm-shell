@@ -38,10 +38,115 @@ const SECURITY_INIT_SCRIPT: &str = r#"
 })();
 "#;
 
+fn print_help() {
+    println!(
+        "ytm-shell (YouTube Music Desktop) - Hardened Security Shell\n\
+         Usage: ytm-shell [FLAGS]\n\n\
+         Flags:\n\
+           --minimized         Launch directly to system tray in background\n\
+           --disable-gpu       Disable hardware GPU acceleration (force software rasterization)\n\
+           --force-gpu         Force permanent GPU acceleration\n\
+           --allow-unfiltered  Disable network adblocking (debugging only)\n\
+           --uninstall         Completely uninstall ytm-shell and wipe all leftover data\n\
+           -h, --help          Print this help message"
+    );
+}
+
+fn perform_cli_uninstall() {
+    println!("==> Performing complete uninstallation of YTM Shell...");
+
+    // 1. Data directories to purge
+    let mut dirs_to_remove = Vec::new();
+    if let Ok(home) = std::env::var("HOME") {
+        let home_p = std::path::PathBuf::from(home);
+        dirs_to_remove.push(home_p.join(".local/share/com.ytm.shell"));
+        dirs_to_remove.push(home_p.join(".config/com.ytm.shell"));
+        dirs_to_remove.push(home_p.join(".cache/com.ytm.shell"));
+        dirs_to_remove.push(home_p.join(".local/share/ytm-shell"));
+        dirs_to_remove.push(home_p.join(".config/ytm-shell"));
+        dirs_to_remove.push(home_p.join(".cache/ytm-shell"));
+    }
+    if let Ok(appdata) = std::env::var("APPDATA") {
+        let appdata_p = std::path::PathBuf::from(appdata);
+        dirs_to_remove.push(appdata_p.join("com.ytm.shell"));
+        dirs_to_remove.push(appdata_p.join("ytm-shell"));
+    }
+    if let Ok(localappdata) = std::env::var("LOCALAPPDATA") {
+        let localappdata_p = std::path::PathBuf::from(localappdata);
+        dirs_to_remove.push(localappdata_p.join("com.ytm.shell"));
+        dirs_to_remove.push(localappdata_p.join("ytm-shell"));
+        dirs_to_remove.push(localappdata_p.join("YouTube Music"));
+    }
+
+    for dir in &dirs_to_remove {
+        if dir.exists() {
+            if let Err(e) = std::fs::remove_dir_all(dir) {
+                eprintln!("    [!] Could not remove {}: {e}", dir.display());
+            } else {
+                println!("    [-] Purged data: {}", dir.display());
+            }
+        }
+    }
+
+    // 2. Desktop entries & icons (Linux)
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(home) = std::env::var("HOME") {
+            let home_p = std::path::PathBuf::from(home);
+            let desktop_file = home_p.join(".local/share/applications/ytm-shell.desktop");
+            let icon_file = home_p.join(".local/share/icons/hicolor/128x128/apps/ytm-shell.png");
+            let uninstaller_file = home_p.join(".local/bin/ytm-shell-uninstall");
+
+            for file in &[desktop_file, icon_file, uninstaller_file] {
+                if file.exists() {
+                    let _ = std::fs::remove_file(file);
+                    println!("    [-] Removed: {}", file.display());
+                }
+            }
+
+            let _ = std::process::Command::new("update-desktop-database")
+                .arg(home_p.join(".local/share/applications"))
+                .status();
+        }
+    }
+
+    // 3. Remove own binary
+    if let Ok(exe_path) = std::env::current_exe() {
+        if exe_path.exists() {
+            println!("    [-] Removing binary: {}", exe_path.display());
+            #[cfg(target_os = "windows")]
+            {
+                let _ = std::process::Command::new("cmd")
+                    .args(["/c", "timeout", "/t", "1", "/nobreak", ">nul", "&", "del", "/f", "/q"])
+                    .arg(&exe_path)
+                    .spawn();
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                let _ = std::fs::remove_file(&exe_path);
+            }
+        }
+    }
+
+    println!("==> YTM Shell and all leftover files have been completely uninstalled.");
+    std::process::exit(0);
+}
+
 fn main() {
-    // Parse CLI flags with std::env::args (no external CLI parser)
-    let is_minimized = std::env::args().any(|arg| arg == "--minimized");
-    let allow_unfiltered = std::env::args().any(|arg| arg == "--allow-unfiltered");
+    let args: Vec<String> = std::env::args().collect();
+
+    if args.iter().any(|arg| arg == "-h" || arg == "--help") {
+        print_help();
+        return;
+    }
+
+    if args.iter().any(|arg| arg == "--uninstall") {
+        perform_cli_uninstall();
+        return;
+    }
+
+    let is_minimized = args.iter().any(|arg| arg == "--minimized");
+    let allow_unfiltered = args.iter().any(|arg| arg == "--allow-unfiltered");
 
     tauri::Builder::default()
         // Single instance plugin: refocus existing window unless launched with --minimized

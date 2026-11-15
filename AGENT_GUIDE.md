@@ -160,3 +160,28 @@ cargo audit
 # 5. Optimized release compilation
 cargo build --release
 ```
+
+---
+
+## 6. Complete Uninstallation Architecture & Data Sanitization
+
+`ytm-shell` provides a complete multi-tier uninstaller designed to guarantee zero leftover residue upon removal:
+
+### Purged File Locations
+
+| Category | Linux Locations | Windows Locations |
+| :--- | :--- | :--- |
+| **Binaries** | `~/.local/bin/ytm-shell`, `~/.local/bin/ytm-shell-uninstall` | `$PROGRAMFILES64\YouTube Music\ytm-shell.exe` |
+| **Launchers / Shortcuts** | `~/.local/share/applications/ytm-shell.desktop` | `$SMPROGRAMS\YouTube Music\*.lnk`, `$DESKTOP\YouTube Music.lnk` |
+| **Icons** | `~/.local/share/icons/hicolor/*/apps/ytm-shell.png` | `$PROGRAMFILES64\YouTube Music\icon.ico` |
+| **User Profiles & Cookies** | `~/.local/share/com.ytm.shell/profile/`, `~/.config/com.ytm.shell` | `%APPDATA%\com.ytm.shell`, `%APPDATA%\ytm-shell` |
+| **Adblock Rule Lists** | `~/.local/share/com.ytm.shell/profile/rules/` | `%APPDATA%\com.ytm.shell\profile\rules\` |
+| **Caches & Storage** | `~/.cache/com.ytm.shell/`, `~/.cache/ytm-shell/` | `%LOCALAPPDATA%\com.ytm.shell`, `%LOCALAPPDATA%\YouTube Music` |
+| **Registry Entries** | N/A | `HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\YouTube Music` |
+
+### Entry Points
+1. **Linux Standalone Script**: `dist/uninstall.sh` (can be executed via curl pipe or locally).
+2. **Linux Pre-Installed Binary**: `ytm-shell-uninstall` (placed in `~/.local/bin/`).
+3. **Application Built-in CLI Flag**: `ytm-shell --uninstall` (handles POSIX unlinking and Windows deferred batch deletion).
+4. **Windows Native Uninstaller**: `packaging/windows/installer.nsi` uninstaller registered in Windows Settings / Control Panel.
+

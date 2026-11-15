@@ -54,6 +54,7 @@ jobs:
           cp packaging/ytm-shell.desktop dist-pkg/
           cp icons/128x128.png dist-pkg/
           cp dist/install.sh dist-pkg/
+          cp dist/uninstall.sh dist-pkg/
           tar -czvf ytm-shell-linux-x86_64.tar.gz -C dist-pkg .
 
       - name: Upload Linux Artifact
@@ -129,7 +130,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name != 'main' && github.ref_name || 'v0.2.0' }}
+          tag_name: ${{ github.ref_name != 'main' && github.ref_name || 'v0.2.1' }}
           files: artifacts/*
           draft: false
           prerelease: false
