@@ -43,10 +43,9 @@ pub fn apply_platform_hardening<R: Runtime>(window: &WebviewWindow<R>) {
                 settings.set_enable_webgl(true);
             }
 
-            // Smooth rendering, fast page caching, and composited 2D canvas
+            // Smooth rendering and fast page caching
             settings.set_enable_smooth_scrolling(true);
             settings.set_enable_page_cache(true);
-            settings.set_enable_accelerated_2d_canvas(true);
 
             // Essential HTML5 media and streaming capabilities
             // Disable user gesture requirement so asynchronous player fetch & transitions do not get blocked
