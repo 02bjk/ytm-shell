@@ -25,6 +25,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.2.0" date="2026-11-15">
+      <description>
+        <p>Performance optimization release: permanent GPU hardware acceleration on Linux, memoized ad-filtering engine, and non-reflowing media metadata extraction.</p>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-10-02">
       <description>
         <p>Initial release with hardened security architecture, MPRIS media keys, and adblocking engine.</p>

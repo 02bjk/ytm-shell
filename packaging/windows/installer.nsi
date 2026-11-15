@@ -8,7 +8,7 @@
 !include "FileFunc.nsh"
 
 !define PRODUCT_NAME "YouTube Music"
-!define PRODUCT_VERSION "0.1.0"
+!define PRODUCT_VERSION "0.2.0"
 !define PRODUCT_PUBLISHER "02bjk"
 !define PRODUCT_WEB_SITE "https://github.com/02bjk/ytm-shell"
 !define PRODUCT_EXE "ytm-shell.exe"
