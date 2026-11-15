@@ -42,18 +42,23 @@ pub const METADATA_EXTRACT_SCRIPT: &str = r#"
     (function() {
         var meta = window.navigator && window.navigator.mediaSession && window.navigator.mediaSession.metadata;
         var video = document.querySelector('video');
-        var titleEl = document.querySelector('.title.ytmusic-player-bar, ytmusic-player-bar .title');
-        var bylineEl = document.querySelector('.byline.ytmusic-player-bar, ytmusic-player-bar .byline');
-        var imgEl = document.querySelector('ytmusic-player-bar img, .image.ytmusic-player-bar');
-
-        var title = (meta && meta.title) || (titleEl ? titleEl.innerText : '') || '';
-        var artist = (meta && meta.artist) || (bylineEl ? bylineEl.innerText : '') || '';
+        var title = (meta && meta.title) || '';
+        var artist = (meta && meta.artist) || '';
         var album = (meta && meta.album) || '';
         var artUrl = '';
         if (meta && meta.artwork && meta.artwork.length > 0) {
             artUrl = meta.artwork[meta.artwork.length - 1].src || '';
-        } else if (imgEl && imgEl.src) {
-            artUrl = imgEl.src;
+        }
+
+        if (!title || !artist) {
+            var titleEl = document.querySelector('.title.ytmusic-player-bar, ytmusic-player-bar .title');
+            var bylineEl = document.querySelector('.byline.ytmusic-player-bar, ytmusic-player-bar .byline');
+            if (!title && titleEl) { title = titleEl.textContent || ''; }
+            if (!artist && bylineEl) { artist = bylineEl.textContent || ''; }
+        }
+        if (!artUrl) {
+            var imgEl = document.querySelector('ytmusic-player-bar img, .image.ytmusic-player-bar');
+            if (imgEl && imgEl.src) { artUrl = imgEl.src; }
         }
 
         var isPaused = video ? video.paused : true;
@@ -136,7 +141,7 @@ pub fn start_metadata_polling<R: Runtime>(
     metadata: std::sync::Arc<std::sync::Mutex<TrackMetadata>>,
 ) {
     std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_millis(1500));
+        std::thread::sleep(std::time::Duration::from_millis(2000));
         if let Some(window) = app.get_webview_window("main") {
             let meta_arc = metadata.clone();
             crate::platform::query_track_metadata(&window, move |new_meta| {

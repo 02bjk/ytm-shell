@@ -28,25 +28,25 @@ pub fn apply_platform_hardening<R: Runtime>(window: &WebviewWindow<R>) {
 
             // GPU and Hardware Graphics/Video Acceleration
             let disable_gpu = std::env::args().any(|arg| arg == "--disable-gpu");
-            let force_gpu = std::env::args().any(|arg| arg == "--force-gpu");
 
             if disable_gpu {
                 settings.set_hardware_acceleration_policy(
                     webkit2gtk::HardwareAccelerationPolicy::Never,
                 );
                 settings.set_enable_webgl(false);
-            } else if force_gpu {
+            } else {
+                // Default: Permanent GPU Hardware Acceleration
+                // Eliminates the 1-3s OnDemand context-switching lag and UI thread stalls on hover
                 settings.set_hardware_acceleration_policy(
                     webkit2gtk::HardwareAccelerationPolicy::Always,
                 );
                 settings.set_enable_webgl(true);
-            } else {
-                // Default: OnDemand acceleration (activates GPU for video/compositing without wasting power)
-                settings.set_hardware_acceleration_policy(
-                    webkit2gtk::HardwareAccelerationPolicy::OnDemand,
-                );
-                settings.set_enable_webgl(true);
             }
+
+            // Smooth rendering, fast page caching, and composited 2D canvas
+            settings.set_enable_smooth_scrolling(true);
+            settings.set_enable_page_cache(true);
+            settings.set_enable_accelerated_2d_canvas(true);
 
             // Essential HTML5 media and streaming capabilities
             // Disable user gesture requirement so asynchronous player fetch & transitions do not get blocked

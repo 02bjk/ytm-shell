@@ -31,8 +31,7 @@ pub const LAYER_A_SCRIPT: &str = r#"
         .ytp-ad-image-overlay,
         .video-ads,
         #offer-module,
-        tp-yt-paper-dialog:has(ytmusic-mealbar-promo-renderer),
-        ytmusic-guide-entry-renderer:has(a[href*="music_premium"]) {
+        ytmusic-guide-entry-renderer a[href*="music_premium"] {
             display: none !important;
         }
 
@@ -241,18 +240,30 @@ pub const LAYER_A_SCRIPT: &str = r#"
             if (isAdTarget) {
                 var origJson = response.json.bind(response);
                 var origText = response.text.bind(response);
+                var cachedPrunedJson = null;
+                var cachedPrunedText = null;
 
                 response.json = async function() {
+                    if (cachedPrunedJson) return cachedPrunedJson;
                     var data = await origJson();
-                    return pruneRecursive(data, 0);
+                    cachedPrunedJson = pruneRecursive(data, 0);
+                    return cachedPrunedJson;
                 };
 
                 response.text = async function() {
+                    if (cachedPrunedText) return cachedPrunedText;
+                    if (cachedPrunedJson) {
+                        cachedPrunedText = JSON.stringify(cachedPrunedJson);
+                        return cachedPrunedText;
+                    }
                     var raw = await origText();
                     try {
                         var parsed = JSON.parse(raw);
-                        return JSON.stringify(pruneRecursive(parsed, 0));
+                        cachedPrunedJson = pruneRecursive(parsed, 0);
+                        cachedPrunedText = JSON.stringify(cachedPrunedJson);
+                        return cachedPrunedText;
                     } catch (_) {
+                        cachedPrunedText = raw;
                         return raw;
                     }
                 };
@@ -297,13 +308,18 @@ pub const LAYER_A_SCRIPT: &str = r#"
         if (descText && descText.get) {
             Object.defineProperty(XMLHttpRequest.prototype, 'responseText', {
                 get: function() {
+                    if (this._ytmPrunedText !== undefined) {
+                        return this._ytmPrunedText;
+                    }
                     var raw = descText.get.call(this);
                     if (this._ytmUrl && (this._ytmUrl.includes('/youtubei/v1/player') || this._ytmUrl.includes('/youtubei/v1/next'))) {
                         try {
                             var data = JSON.parse(raw);
-                            return JSON.stringify(pruneRecursive(data, 0));
+                            this._ytmPrunedText = JSON.stringify(pruneRecursive(data, 0));
+                            return this._ytmPrunedText;
                         } catch (_) {}
                     }
+                    this._ytmPrunedText = raw;
                     return raw;
                 },
                 configurable: true,
@@ -314,17 +330,23 @@ pub const LAYER_A_SCRIPT: &str = r#"
         if (descResp && descResp.get) {
             Object.defineProperty(XMLHttpRequest.prototype, 'response', {
                 get: function() {
+                    if (this._ytmPrunedResp !== undefined) {
+                        return this._ytmPrunedResp;
+                    }
                     var raw = descResp.get.call(this);
                     if (this._ytmUrl && (this._ytmUrl.includes('/youtubei/v1/player') || this._ytmUrl.includes('/youtubei/v1/next'))) {
                         if (typeof raw === 'string') {
                             try {
                                 var data = JSON.parse(raw);
-                                return JSON.stringify(pruneRecursive(data, 0));
+                                this._ytmPrunedResp = JSON.stringify(pruneRecursive(data, 0));
+                                return this._ytmPrunedResp;
                             } catch (_) {}
                         } else if (typeof raw === 'object' && raw !== null) {
-                            return pruneRecursive(raw, 0);
+                            this._ytmPrunedResp = pruneRecursive(raw, 0);
+                            return this._ytmPrunedResp;
                         }
                     }
+                    this._ytmPrunedResp = raw;
                     return raw;
                 },
                 configurable: true,
@@ -405,10 +427,9 @@ pub const LAYER_A_SCRIPT: &str = r#"
             isAd = player.classList.contains('ad-showing') ||
                    player.classList.contains('ad-interrupting');
         }
-        if (!isAd) {
-            isAd = !!document.querySelector(
-                '.ytp-ad-player-overlay, .ytp-ad-preview-container, .ytp-ad-text, .ytp-ad-skip-button-slot'
-            );
+        if (!isAd && isBypassingAd) {
+            var overlay = document.querySelector('.ytp-ad-player-overlay, .ytp-ad-skip-button-slot');
+            isAd = !!(overlay && overlay.offsetParent !== null);
         }
 
         var video = document.querySelector('video');

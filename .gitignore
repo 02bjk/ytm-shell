@@ -5,6 +5,9 @@
 # Operating System files
 .DS_Store
 Thumbs.db
+*.webm
+*.mp4
+*.mkv
 
 # IDE & Editor files
 .idea/
